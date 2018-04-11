@@ -33,13 +33,13 @@ public class CustomerServiceTest {
         customerList.stream().forEach((customer)->{
             System.out.println(customer.toString());
         });
-        Assert.assertEquals(2,customerList.size());
     }
 
     @Test
     public void getCustomerTest(){
         long id = 1;
         Customer customer = customerService.getCustomer(id);
+        System.out.println(customer.toString());
         Assert.assertNotNull(customer);
     }
 
