@@ -3,6 +3,8 @@ package org.smart4j.chapter2.test;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.smart4j.chapter2.model.Customer;
 import org.smart4j.chapter2.service.CustomerService;
 
@@ -10,12 +12,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//@RunWith(Parameterized.class)
 public class CustomerServiceTest {
 
     private final CustomerService customerService;
 
-    public CustomerServiceTest(CustomerService customerService) {
-        this.customerService = customerService;
+
+    public CustomerServiceTest() {
+        customerService = new CustomerService();
     }
 
     @Before
@@ -26,6 +30,9 @@ public class CustomerServiceTest {
     @Test
     public void getCustomerListTest(){
         List<Customer> customerList = customerService.getCustomerList();
+        customerList.stream().forEach((customer)->{
+            System.out.println(customer.toString());
+        });
         Assert.assertEquals(2,customerList.size());
     }
 
