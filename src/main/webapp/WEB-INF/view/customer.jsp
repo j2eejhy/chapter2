@@ -6,6 +6,7 @@
   To change this template use File | Settings | File Templates.
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var="BASE" value="${pageContext.request.contextPath}"/>
 <html>
 <head>
@@ -30,7 +31,7 @@
                 <td>${customer.email}</td>
                 <td>
                     <a href="${BASE}/customer_edit?id=${customer.id}">编辑</a>
-                    <a href="${BASE}/customer_delete?id=${customer.id}"></a>
+                    <a href="${BASE}/customer_delete?id=${customer.id}">删除</a>
                 </td>
             </tr>
         </c:forEach>
