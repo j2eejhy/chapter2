@@ -1,21 +1,20 @@
 package org.smart4j.chapter2.helper;
 
-import com.sun.org.apache.regexp.internal.RE;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smart4j.chapter2.util.PropsUtil;
-import org.smart4j.chapter2.util.StringUtil;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 public class DatabaseHelper {
 
@@ -31,7 +30,7 @@ public class DatabaseHelper {
 
     private static final QueryRunner QUERY_RUNNER = new QueryRunner();
 
-    private static final ThreadLocal<Connection> CONNECTION_THREAD_LOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<Connection> CONNECTION_THREAD_LOCAL = new ThreadLocal<Connection>();
 
     static {
         Properties config = PropsUtil.loadProps("config.properties");
