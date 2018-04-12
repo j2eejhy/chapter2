@@ -1,19 +1,15 @@
 package org.smart4j.chapter2.helper;
 
-import com.sun.org.apache.regexp.internal.RE;
+import org.apache.commons.dbcp2.BasicDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.apache.commons.dbutils.handlers.MapListHandler;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.text.StrBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smart4j.chapter2.util.PropsUtil;
-import org.smart4j.chapter2.util.StringUtil;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -29,22 +25,27 @@ public class DatabaseHelper {
 
     private static final String PASSWORD;
 
-    private static final QueryRunner QUERY_RUNNER = new QueryRunner();
+    private static final QueryRunner QUERY_RUNNER;
 
-    private static final ThreadLocal<Connection> CONNECTION_THREAD_LOCAL = new ThreadLocal<>();
+    private static final ThreadLocal<Connection> CONNECTION_THREAD_LOCAL;
+
+    private static final BasicDataSource DATA_SOURCE;
 
     static {
-        Properties config = PropsUtil.loadProps("config.properties");
+        CONNECTION_THREAD_LOCAL = new ThreadLocal<Connection>();
+        QUERY_RUNNER = new QueryRunner();
+
+        Properties config = PropsUtil.loadProps("src/test/resources/config.properties");
         DRIVER = config.getProperty("jdbc.driver");
         URL = config.getProperty("jdbc.url");
         USERNAME = config.getProperty("jdbc.username");
         PASSWORD = config.getProperty("jdbc.password");
 
-        try {
-            Class.forName(DRIVER);
-        } catch (ClassNotFoundException e) {
-            LOGGER.error("can not load jdbc driver", e);
-        }
+        DATA_SOURCE = new BasicDataSource();
+        DATA_SOURCE.setDriverClassName(DRIVER);
+        DATA_SOURCE.setUrl(URL);
+        DATA_SOURCE.setUsername(USERNAME);
+        DATA_SOURCE.setPassword(PASSWORD);
     }
 
 
@@ -53,9 +54,10 @@ public class DatabaseHelper {
         Connection conn = CONNECTION_THREAD_LOCAL.get();
         if (conn == null) {
             try {
-                conn = DriverManager.getConnection(URL, USERNAME, PASSWORD);
+                conn = DATA_SOURCE.getConnection();
             } catch (SQLException e) {
                 LOGGER.error("get connection failure", e);
+                throw new RuntimeException(e);
             } finally {
                 CONNECTION_THREAD_LOCAL.set(conn);
             }
@@ -63,20 +65,7 @@ public class DatabaseHelper {
         return conn;
     }
 
-    /*关闭数据库链接*/
-    public static void closeConnection() {
-        Connection conn = CONNECTION_THREAD_LOCAL.get();
-        if (conn != null) {
-            try {
-                conn.close();
-            } catch (SQLException e) {
-                LOGGER.error("close connection failure", e);
-                throw new RuntimeException(e);
-            } finally {
-                CONNECTION_THREAD_LOCAL.remove();
-            }
-        }
-    }
+
 
     /*查询所有对象*/
     public static <T> List<T> queryEntityList(Class<T> entityClass, String sql, Object... params) {
@@ -86,8 +75,6 @@ public class DatabaseHelper {
             entityList = QUERY_RUNNER.query(conn, sql, new BeanListHandler<T>(entityClass), params);
         } catch (SQLException e) {
             LOGGER.error("query entity list failure", e);
-        } finally {
-            closeConnection();
         }
         return entityList;
     }
@@ -126,8 +113,6 @@ public class DatabaseHelper {
             rows = QUERY_RUNNER.update(conn, sql, params);
         } catch (SQLException e) {
             LOGGER.error("query entity list failure", e);
-        } finally {
-            closeConnection();
         }
         return rows;
     }
